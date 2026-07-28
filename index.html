@@ -4,138 +4,296 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0b0d10">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#e8ede6">
 <link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>Cost of Eating</title>
 <style>
   :root{
-    --bg:#0b0d10; --card:#14181d; --card2:#1b2027; --line:#252b33;
-    --tx:#e8edf2; --dim:#8b96a3; --accent:#3ddc84; --warn:#ffb02e; --bad:#ff5a5a;
-    --blue:#5aa9ff;
+    --bg:#e8ede6;
+    --bg2:#dfe6dc;
+    --ink:#141a14;
+    --muted:#5e6a5c;
+    --line:rgba(20,26,20,.1);
+    --line2:rgba(20,26,20,.06);
+    --surface:rgba(255,255,255,.72);
+    --surface-solid:#f7f9f5;
+    --leaf:#1f6b4a;
+    --leaf-soft:rgba(31,107,74,.12);
+    --sky:#2a5f8f;
+    --sky-soft:rgba(42,95,143,.12);
+    --amber:#9a5b12;
+    --amber-soft:rgba(154,91,18,.14);
+    --bad:#a12828;
+    --bad-soft:rgba(161,40,40,.12);
     --safe-b: env(safe-area-inset-bottom, 0px);
+    --safe-t: env(safe-area-inset-top, 0px);
+    --font: "Outfit", system-ui, sans-serif;
+    --display: "Fraunces", Georgia, serif;
+    --radius: 18px;
+    --ease: cubic-bezier(.22,1,.36,1);
   }
   *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
   html,body{margin:0;padding:0}
   body{
-    background:var(--bg); color:var(--tx);
-    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-    padding-bottom:calc(76px + var(--safe-b));
+    min-height:100dvh;
+    color:var(--ink);
+    font:15px/1.45 var(--font);
+    background:
+      radial-gradient(ellipse 90% 55% at 8% -10%, rgba(31,107,74,.16), transparent 55%),
+      radial-gradient(ellipse 70% 45% at 100% 8%, rgba(42,95,143,.12), transparent 50%),
+      radial-gradient(ellipse 60% 40% at 50% 100%, rgba(154,91,18,.08), transparent 45%),
+      linear-gradient(180deg, var(--bg) 0%, var(--bg2) 100%);
+    background-attachment: fixed;
+    padding-bottom:calc(84px + var(--safe-b));
     overscroll-behavior-y:none;
+    -webkit-font-smoothing:antialiased;
   }
-  .wrap{max-width:640px;margin:0 auto;padding:14px 14px 24px}
-  h1{font-size:20px;margin:2px 0 2px;letter-spacing:-.02em}
-  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:22px 0 8px;font-weight:600}
-  .sub{color:var(--dim);font-size:13px;margin:0 0 14px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+  body::before{
+    content:"";
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    opacity:.35;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+    mix-blend-mode:multiply;
+  }
+  .wrap{
+    position:relative; z-index:1;
+    max-width:440px; margin:0 auto;
+    padding:calc(18px + var(--safe-t)) 18px 28px;
+  }
+  h1{
+    font-family:var(--display);
+    font-size:34px; font-weight:600; line-height:1.05;
+    letter-spacing:-.03em; margin:0;
+  }
+  h2{
+    font-size:11px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.14em; color:var(--muted);
+    margin:28px 0 10px;
+  }
+  .sub{color:var(--muted); font-size:13.5px; margin:6px 0 0; font-weight:450}
+  .panel{
+    background:var(--surface);
+    backdrop-filter:blur(18px) saturate(1.2);
+    -webkit-backdrop-filter:blur(18px) saturate(1.2);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:16px;
+    margin-bottom:12px;
+    box-shadow:0 1px 0 rgba(255,255,255,.55) inset;
+  }
+  .panel.hero{
+    padding:20px 18px 18px;
+    background:linear-gradient(160deg, rgba(255,255,255,.88), rgba(247,249,245,.7));
+  }
   .row{display:flex;align-items:center;gap:10px}
-  .between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:12px}
   .grow{flex:1;min-width:0}
   .mono{font-variant-numeric:tabular-nums}
-  .big{font-size:26px;font-weight:700;letter-spacing:-.02em}
-  .lbl{font-size:12px;color:var(--dim)}
-  .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  /* progress */
-  .bar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}
-  .bar > i{display:block;height:100%;border-radius:99px;transition:width .25s}
-  /* stepper */
-  .step{display:flex;align-items:center;gap:0;background:var(--card2);border-radius:11px;overflow:hidden;flex:none}
-  .step button{
-    width:42px;height:40px;border:0;background:transparent;color:var(--tx);
-    font-size:21px;line-height:1;cursor:pointer;font-weight:500
+  .display{
+    font-family:var(--display);
+    font-weight:600;
+    letter-spacing:-.03em;
+    font-variant-numeric:tabular-nums;
   }
-  .step button:active{background:#2b323b}
-  .step .n{min-width:34px;text-align:center;font-size:15px;font-weight:600}
-  .item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
-  .item:last-child{border-bottom:0}
-  .emoji{font-size:21px;width:26px;text-align:center;flex:none}
-  .nm{font-size:14.5px;font-weight:500}
-  .meta{font-size:11.5px;color:var(--dim);margin-top:1px}
-  /* nav */
+  .big{font-size:36px; line-height:1}
+  .lbl{font-size:12px; color:var(--muted); font-weight:500; letter-spacing:.02em}
+  .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+  .bar{
+    height:7px; background:var(--line2);
+    border-radius:99px; overflow:hidden; margin-top:10px;
+  }
+  .bar > i{
+    display:block; height:100%; border-radius:99px;
+    transition:width .45s var(--ease);
+  }
+
+  .step{
+    display:flex; align-items:center; gap:0;
+    background:var(--surface-solid);
+    border:1px solid var(--line);
+    border-radius:12px; overflow:hidden; flex:none;
+  }
+  .step button{
+    width:40px; height:38px; border:0; background:transparent;
+    color:var(--ink); font-size:20px; line-height:1;
+    cursor:pointer; font-family:inherit; font-weight:500;
+  }
+  .step button:active{background:var(--leaf-soft)}
+  .step .n{min-width:32px; text-align:center; font-size:14px; font-weight:600}
+
+  .item{
+    display:flex; align-items:center; gap:11px;
+    padding:11px 0;
+    border-bottom:1px solid var(--line2);
+  }
+  .item:last-child{border-bottom:0; padding-bottom:0}
+  .item:first-child{padding-top:0}
+  .glyph{
+    width:36px; height:36px; flex:none;
+    display:grid; place-items:center;
+    border-radius:11px;
+    background:var(--leaf-soft);
+    font-size:17px; line-height:1;
+  }
+  .nm{font-size:14.5px; font-weight:560}
+  .meta{font-size:12px; color:var(--muted); margin-top:2px}
+
   nav{
-    position:fixed;left:0;right:0;bottom:0;z-index:50;
-    background:rgba(11,13,16,.93);backdrop-filter:blur(14px);
-    border-top:1px solid var(--line);
-    padding-bottom:var(--safe-b);
-    display:flex;
+    position:fixed; left:12px; right:12px; bottom:calc(10px + var(--safe-b));
+    z-index:50; max-width:440px; margin:0 auto;
+    background:rgba(255,255,255,.82);
+    backdrop-filter:blur(20px) saturate(1.3);
+    -webkit-backdrop-filter:blur(20px) saturate(1.3);
+    border:1px solid var(--line);
+    border-radius:22px;
+    padding:6px;
+    display:flex; gap:2px;
+    box-shadow:0 10px 36px rgba(20,26,20,.1), 0 1px 0 rgba(255,255,255,.7) inset;
   }
   nav button{
-    flex:1;background:0;border:0;color:var(--dim);padding:9px 0 8px;
-    font-size:10.5px;font-weight:600;letter-spacing:.03em;cursor:pointer;
-    display:flex;flex-direction:column;align-items:center;gap:3px
+    flex:1; background:0; border:0; color:var(--muted);
+    padding:10px 4px 8px; border-radius:16px;
+    font-size:10px; font-weight:600; letter-spacing:.04em;
+    cursor:pointer; font-family:inherit;
+    display:flex; flex-direction:column; align-items:center; gap:4px;
+    transition:color .2s, background .2s;
   }
-  nav button .ic{font-size:19px;line-height:1}
-  nav button.on{color:var(--accent)}
-  .tab{display:none}
+  nav button svg{width:20px; height:20px; stroke:currentColor; fill:none; stroke-width:1.75; stroke-linecap:round; stroke-linejoin:round}
+  nav button.on{
+    color:var(--leaf);
+    background:var(--leaf-soft);
+  }
+
+  .tab{display:none; animation:rise .38s var(--ease)}
   .tab.on{display:block}
-  /* chips */
-  .chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  @keyframes rise{
+    from{opacity:0; transform:translateY(8px)}
+    to{opacity:1; transform:none}
+  }
+
+  .chips{
+    display:flex; gap:7px; overflow-x:auto;
+    padding:2px 0 12px; -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
   .chips::-webkit-scrollbar{display:none}
   .chip{
-    flex:none;background:var(--card2);border:1px solid var(--line);color:var(--dim);
-    padding:7px 13px;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap
+    flex:none;
+    background:rgba(255,255,255,.55);
+    border:1px solid var(--line);
+    color:var(--muted);
+    padding:8px 14px; border-radius:999px;
+    font-size:13px; font-weight:550; cursor:pointer;
+    white-space:nowrap; font-family:inherit;
+    transition:background .2s, color .2s, border-color .2s;
   }
-  .chip.on{background:var(--accent);border-color:var(--accent);color:#08110c;font-weight:600}
-  /* inputs */
-  input[type=number],input[type=text],input[type=date]{
-    background:var(--card2);border:1px solid var(--line);color:var(--tx);
-    border-radius:10px;padding:10px 11px;font-size:16px;width:100%;font-family:inherit
+  .chip.on{
+    background:var(--ink); border-color:var(--ink); color:#f4f7f2;
   }
-  input:focus{outline:none;border-color:var(--accent)}
+
+  input[type=number],input[type=text],input[type=date],select{
+    background:var(--surface-solid);
+    border:1px solid var(--line);
+    color:var(--ink);
+    border-radius:12px;
+    padding:11px 12px;
+    font-size:16px; width:100%;
+    font-family:inherit;
+  }
+  input:focus,select:focus{outline:none; border-color:var(--leaf); box-shadow:0 0 0 3px var(--leaf-soft)}
   .btn{
-    background:var(--accent);color:#08110c;border:0;border-radius:11px;
-    padding:12px 16px;font-size:15px;font-weight:650;cursor:pointer;font-family:inherit
+    background:var(--ink); color:#f4f7f2; border:0;
+    border-radius:12px; padding:12px 16px;
+    font-size:14.5px; font-weight:600; cursor:pointer; font-family:inherit;
+    transition:transform .15s, opacity .15s;
   }
-  .btn.ghost{background:var(--card2);color:var(--tx);border:1px solid var(--line);font-weight:500}
-  .btn:active{opacity:.75}
-  .btn.sm{padding:9px 13px;font-size:13.5px}
-  .cb{width:23px;height:23px;accent-color:var(--accent);flex:none}
-  .done{opacity:.38;text-decoration:line-through}
-  .del{background:0;border:0;color:var(--dim);font-size:19px;padding:4px 6px;cursor:pointer;flex:none}
-  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
-  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
-  .note{font-size:12.5px;color:var(--dim);line-height:1.5}
-  .pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--card2);color:var(--dim)}
-  .pill.ok{background:rgba(61,220,132,.14);color:var(--accent)}
-  .pill.warn{background:rgba(255,176,46,.14);color:var(--warn)}
-  .pill.bad{background:rgba(255,90,90,.14);color:var(--bad)}
-  .empty{color:var(--dim);font-size:13.5px;text-align:center;padding:18px 0}
-  hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+  .btn:active{transform:scale(.97); opacity:.9}
+  .btn.ghost{
+    background:rgba(255,255,255,.6);
+    color:var(--ink); border:1px solid var(--line); font-weight:550;
+  }
+  .btn.sm{padding:8px 12px; font-size:13px; border-radius:10px}
+  .cb{width:20px; height:20px; accent-color:var(--leaf); flex:none}
+  .done{opacity:.42}
+  .done .nm{text-decoration:line-through}
+  .del{
+    background:0; border:0; color:var(--muted);
+    font-size:20px; padding:4px 8px; cursor:pointer; flex:none;
+    font-family:inherit; line-height:1;
+  }
+  .g3{display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px}
+  .stat{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:14px 12px;
+    box-shadow:0 1px 0 rgba(255,255,255,.5) inset;
+  }
+  .stat .display{font-size:22px; margin-top:4px}
+  .note{font-size:12.5px; color:var(--muted); line-height:1.55}
+  .pill{
+    font-size:11px; font-weight:600; padding:4px 9px;
+    border-radius:999px; background:var(--line2); color:var(--muted);
+  }
+  .pill.ok{background:var(--leaf-soft); color:var(--leaf)}
+  .pill.warn{background:var(--amber-soft); color:var(--amber)}
+  .pill.bad{background:var(--bad-soft); color:var(--bad)}
+  .empty{color:var(--muted); font-size:13.5px; text-align:center; padding:22px 8px}
+  .rule{height:1px; background:var(--line2); margin:16px 0; border:0}
+  .day-nav{display:flex; gap:6px}
+  .metric-pair{display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-top:4px}
+  .metric-pair + .metric-pair{margin-top:18px}
+  .cost-row{
+    display:flex; align-items:baseline; justify-content:space-between;
+    margin-top:4px;
+  }
+  .cost-row .display{font-size:22px; color:var(--leaf)}
+  .topbar{margin-bottom:18px}
+  .topbar .sub{margin-top:4px}
+  @media (min-width:480px){
+    .wrap{padding-left:20px; padding-right:20px}
+  }
 </style>
 </head>
 <body>
 
 <!-- ================= EAT ================= -->
 <section class="tab on" id="tab-eat"><div class="wrap">
-  <div class="between">
+  <div class="between topbar">
     <div>
       <h1>Today</h1>
-      <p class="sub" id="eatDate" style="margin:0"></p>
+      <p class="sub" id="eatDate"></p>
     </div>
-    <div class="row" style="gap:6px">
-      <button class="btn ghost sm" onclick="shiftDay(-1)">‹</button>
-      <button class="btn ghost sm" onclick="shiftDay(1)">›</button>
+    <div class="day-nav">
+      <button class="btn ghost sm" onclick="shiftDay(-1)" aria-label="Previous day">‹</button>
+      <button class="btn ghost sm" onclick="shiftDay(1)" aria-label="Next day">›</button>
     </div>
   </div>
 
-  <div class="card" style="margin-top:14px">
-    <div class="between">
-      <div><div class="lbl">Protein</div><div class="big mono" id="pNow">0<span style="font-size:15px;color:var(--dim)">g</span></div></div>
-      <div style="text-align:right"><div class="lbl">of target</div><div class="mono" id="pGoal" style="font-size:15px;color:var(--dim)"></div></div>
+  <div class="panel hero">
+    <div class="metric-pair">
+      <div>
+        <div class="lbl">Protein</div>
+        <div class="display big mono" id="pNow">0<span style="font-size:18px;color:var(--muted);font-weight:500">g</span></div>
+        <div class="lbl mono" id="pGoal" style="margin-top:4px"></div>
+        <div class="bar"><i id="pBar" style="background:var(--leaf);width:0%"></i></div>
+      </div>
+      <div>
+        <div class="lbl">Calories</div>
+        <div class="display big mono" id="kNow">0</div>
+        <div class="lbl mono" id="kGoal" style="margin-top:4px"></div>
+        <div class="bar"><i id="kBar" style="background:var(--sky);width:0%"></i></div>
+      </div>
     </div>
-    <div class="bar"><i id="pBar" style="background:var(--accent);width:0%"></i></div>
-
-    <div class="between" style="margin-top:16px">
-      <div><div class="lbl">Calories</div><div class="big mono" id="kNow">0</div></div>
-      <div style="text-align:right"><div class="lbl">of target</div><div class="mono" id="kGoal" style="font-size:15px;color:var(--dim)"></div></div>
-    </div>
-    <div class="bar"><i id="kBar" style="background:var(--blue);width:0%"></i></div>
-
-    <hr>
-    <div class="between">
+    <hr class="rule">
+    <div class="cost-row">
       <span class="lbl">Food cost today</span>
-      <span class="mono" id="eatCost" style="font-weight:650">$0.00</span>
+      <span class="display mono" id="eatCost">$0.00</span>
     </div>
   </div>
 
@@ -143,64 +301,74 @@
 
   <h2>Add food</h2>
   <div class="chips" id="foodCats"></div>
-  <div class="card" id="foodList"></div>
+  <div class="panel" id="foodList"></div>
   <p class="note">Servings are real portions, not 100 g lab units. Cost is your share of the grocery item.</p>
 </div></section>
 
 <!-- ================= SHOP ================= -->
 <section class="tab" id="tab-shop"><div class="wrap">
-  <h1>Basket</h1>
-  <p class="sub">Weekly quantities. Drives your grocery budget and your daily macros.</p>
+  <div class="topbar">
+    <h1>Basket</h1>
+    <p class="sub">Weekly quantities — grocery budget and daily macros in one place.</p>
+  </div>
 
   <div class="g3">
-    <div class="stat"><div class="lbl">Per week</div><div class="mono" id="bWeek" style="font-size:19px;font-weight:700">$0</div></div>
-    <div class="stat"><div class="lbl">Per month</div><div class="mono" id="bMonth" style="font-size:19px;font-weight:700">$0</div></div>
-    <div class="stat"><div class="lbl">P / day</div><div class="mono" id="bProt" style="font-size:19px;font-weight:700">0g</div></div>
+    <div class="stat"><div class="lbl">Per week</div><div class="display mono" id="bWeek">$0</div></div>
+    <div class="stat"><div class="lbl">Per month</div><div class="display mono" id="bMonth">$0</div></div>
+    <div class="stat"><div class="lbl">P / day</div><div class="display mono" id="bProt">0g</div></div>
   </div>
-  <div class="card" style="margin-top:10px">
-    <div class="between"><span class="lbl">Calories/day from basket</span><span class="mono" id="bKcal" style="font-weight:650">0</span></div>
-    <div class="between" style="margin-top:8px"><span class="lbl">vs grocery budget</span><span id="bVs" class="pill">—</span></div>
+  <div class="panel" style="margin-top:10px">
+    <div class="between"><span class="lbl">Calories/day from basket</span><span class="mono" style="font-weight:650" id="bKcal">0</span></div>
+    <div class="between" style="margin-top:10px"><span class="lbl">vs grocery budget</span><span id="bVs" class="pill">—</span></div>
   </div>
 
-  <div class="between" style="margin:20px 0 8px">
+  <div class="between" style="margin:8px 0 0">
     <h2 style="margin:0">Store run</h2>
     <button class="btn ghost sm" onclick="clearChecks()">Uncheck all</button>
   </div>
-  <div class="chips" id="shopCats"></div>
-  <div class="card" id="shopList"></div>
+  <div class="chips" id="shopCats" style="margin-top:12px"></div>
+  <div class="panel" id="shopList"></div>
   <p class="note">Prices are London/Ontario ballpark (No Frills, Food Basics, Adonis / halal butcher). Tap a price to change it — it saves.</p>
 </div></section>
 
 <!-- ================= SPEND ================= -->
 <section class="tab" id="tab-spend"><div class="wrap">
-  <h1>Money</h1>
-  <p class="sub" id="spendMonth"></p>
+  <div class="topbar">
+    <h1>Money</h1>
+    <p class="sub" id="spendMonth"></p>
+  </div>
 
-  <div class="card">
-    <div class="between">
-      <div><div class="lbl">All-in per month</div><div class="big mono" id="allIn">$0</div></div>
-      <div style="text-align:right"><div class="lbl">per day</div><div class="mono" id="perDay" style="font-size:15px;color:var(--dim)"></div></div>
+  <div class="panel hero">
+    <div class="between" style="align-items:flex-end">
+      <div>
+        <div class="lbl">All-in per month</div>
+        <div class="display big mono" id="allIn">$0</div>
+      </div>
+      <div style="text-align:right;padding-bottom:4px">
+        <div class="lbl">per day</div>
+        <div class="mono" id="perDay" style="font-size:15px;color:var(--muted);font-weight:600"></div>
+      </div>
     </div>
   </div>
 
   <h2>Fixed</h2>
-  <div class="card" id="fixedList"></div>
+  <div class="panel" id="fixedList"></div>
 
   <h2>Grocery budget this month</h2>
-  <div class="card">
+  <div class="panel">
     <div class="between">
-      <div><div class="lbl">Spent</div><div class="big mono" id="gSpent">$0</div></div>
-      <div style="text-align:right"><div class="lbl">Left</div><div class="mono big" id="gLeft" style="font-size:26px">$0</div></div>
+      <div><div class="lbl">Spent</div><div class="display big mono" id="gSpent" style="font-size:30px">$0</div></div>
+      <div style="text-align:right"><div class="lbl">Left</div><div class="display big mono" id="gLeft" style="font-size:30px">$0</div></div>
     </div>
-    <div class="bar"><i id="gBar" style="background:var(--accent);width:0%"></i></div>
-    <div class="between" style="margin-top:12px">
+    <div class="bar"><i id="gBar" style="background:var(--leaf);width:0%"></i></div>
+    <div class="between" style="margin-top:14px">
       <span class="lbl">Safe to spend / day (<span id="daysLeft">0</span> days left)</span>
       <span class="mono" id="safeDay" style="font-weight:650">$0</span>
     </div>
   </div>
 
   <h2>Log a shop</h2>
-  <div class="card">
+  <div class="panel">
     <div class="row" style="gap:8px">
       <input id="spLabel" type="text" placeholder="No Frills" class="grow">
       <input id="spAmt" type="number" inputmode="decimal" placeholder="0.00" style="width:96px">
@@ -208,48 +376,50 @@
     </div>
     <div class="row" style="gap:8px;margin-top:10px">
       <input id="spDate" type="date" class="grow">
-      <select id="spCat" style="background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:11px;font-size:15px;font-family:inherit">
+      <select id="spCat">
         <option value="groceries">Groceries</option>
         <option value="out">Eating out</option>
         <option value="other">Other</option>
       </select>
     </div>
   </div>
-  <div class="card" id="spendList"></div>
+  <div class="panel" id="spendList"></div>
 </div></section>
 
 <!-- ================= WEIGHT ================= -->
 <section class="tab" id="tab-weight"><div class="wrap">
-  <h1>Cut</h1>
-  <p class="sub" id="cutSub"></p>
-
-  <div class="g3">
-    <div class="stat"><div class="lbl">7-day avg</div><div class="mono" id="wAvg" style="font-size:19px;font-weight:700">—</div></div>
-    <div class="stat"><div class="lbl">Rate</div><div class="mono" id="wRate" style="font-size:19px;font-weight:700">—</div></div>
-    <div class="stat"><div class="lbl">To go</div><div class="mono" id="wTogo" style="font-size:19px;font-weight:700">—</div></div>
+  <div class="topbar">
+    <h1>Cut</h1>
+    <p class="sub" id="cutSub"></p>
   </div>
 
-  <div class="card" style="margin-top:10px">
+  <div class="g3">
+    <div class="stat"><div class="lbl">7-day avg</div><div class="display mono" id="wAvg">—</div></div>
+    <div class="stat"><div class="lbl">Rate</div><div class="display mono" id="wRate">—</div></div>
+    <div class="stat"><div class="lbl">To go</div><div class="display mono" id="wTogo">—</div></div>
+  </div>
+
+  <div class="panel" style="margin-top:10px">
     <div id="chart"></div>
-    <div class="between" style="margin-top:10px">
+    <div class="between" style="margin-top:12px">
       <span class="lbl">Projected 185 lb</span>
       <span class="mono" id="wProj" style="font-weight:650">—</span>
     </div>
   </div>
 
   <h2>Weigh in</h2>
-  <div class="card">
+  <div class="panel">
     <div class="row" style="gap:8px">
       <input id="wDate" type="date" class="grow">
       <input id="wVal" type="number" inputmode="decimal" step="0.1" placeholder="lb" style="width:96px">
       <button class="btn" onclick="addWeight()">Log</button>
     </div>
-    <p class="note" style="margin:10px 0 0">Same time every morning, after the bathroom, before food. Daily noise is water — only the 7-day average means anything.</p>
+    <p class="note" style="margin:12px 0 0">Same time every morning, after the bathroom, before food. Daily noise is water — only the 7-day average means anything.</p>
   </div>
-  <div class="card" id="wList"></div>
+  <div class="panel" id="wList"></div>
 
   <h2>Targets</h2>
-  <div class="card">
+  <div class="panel">
     <div class="item"><div class="grow"><div class="nm">Protein / day</div><div class="meta">1.0 g per lb of goal weight</div></div>
       <input type="number" inputmode="numeric" id="tP" style="width:88px" onchange="setTarget('p',this.value)"></div>
     <div class="item"><div class="grow"><div class="nm">Calories / day</div><div class="meta">~500 under maintenance = 1 lb/week</div></div>
@@ -257,20 +427,32 @@
   </div>
 
   <h2>Data</h2>
-  <div class="card">
+  <div class="panel">
     <div class="row" style="gap:8px">
       <button class="btn ghost sm grow" onclick="exportData()">Export backup</button>
       <button class="btn ghost sm grow" onclick="importData()">Import</button>
     </div>
-    <p class="note" style="margin:10px 0 0">Saved in this browser only. Export before you clear Safari data or switch phones.</p>
+    <p class="note" style="margin:12px 0 0">Saved in this browser only. Export before you clear Safari data or switch phones.</p>
   </div>
 </div></section>
 
 <nav>
-  <button class="on" data-tab="eat"><span class="ic">🍗</span>Eat</button>
-  <button data-tab="shop"><span class="ic">🛒</span>Shop</button>
-  <button data-tab="spend"><span class="ic">💵</span>Spend</button>
-  <button data-tab="weight"><span class="ic">📉</span>Weight</button>
+  <button class="on" data-tab="eat" aria-label="Eat">
+    <svg viewBox="0 0 24 24"><path d="M4 12h16"/><path d="M6 8h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg>
+    Eat
+  </button>
+  <button data-tab="shop" aria-label="Shop">
+    <svg viewBox="0 0 24 24"><path d="M6 7h12l-1 12H7L6 7z"/><path d="M9 7V5a3 3 0 0 1 6 0v2"/><path d="M9 11v2M15 11v2"/></svg>
+    Shop
+  </button>
+  <button data-tab="spend" aria-label="Spend">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v8M9.5 10.5c.5-1 1.5-1.5 2.5-1.5s2 .6 2 1.75c0 2.25-4 1.5-4 3.75 0 1 .8 1.75 2 1.75s1.8-.4 2.3-1.2"/></svg>
+    Spend
+  </button>
+  <button data-tab="weight" aria-label="Weight">
+    <svg viewBox="0 0 24 24"><path d="M4 19h16"/><path d="M5 19V9l4 3 3-7 3 5 4-3v12"/></svg>
+    Weight
+  </button>
 </nav>
 
 <script>
@@ -446,24 +628,24 @@ function renderEat(){
   const t = dayTotals(S.day);
   const pPct = Math.min(100, t.p/S.targets.p*100);
   const kPct = Math.min(100, t.k/S.targets.kcal*100);
-  $('pNow').innerHTML = Math.round(t.p) + '<span style="font-size:15px;color:var(--dim)">g</span>';
+  $('pNow').innerHTML = Math.round(t.p) + '<span style="font-size:18px;color:var(--muted);font-weight:500">g</span>';
   $('kNow').textContent = Math.round(t.k).toLocaleString();
-  $('pGoal').textContent = S.targets.p + 'g';
-  $('kGoal').textContent = S.targets.kcal.toLocaleString();
+  $('pGoal').textContent = 'of ' + S.targets.p + 'g';
+  $('kGoal').textContent = 'of ' + S.targets.kcal.toLocaleString();
   $('pBar').style.width = pPct+'%';
   $('kBar').style.width = kPct+'%';
-  $('kBar').style.background = t.k > S.targets.kcal ? 'var(--bad)' : 'var(--blue)';
+  $('kBar').style.background = t.k > S.targets.kcal ? 'var(--bad)' : 'var(--sky)';
   $('eatCost').textContent = money(t.c);
 
   // eaten list
   const day = S.log[S.day] || {};
   const ids = Object.keys(day);
   $('eaten').innerHTML = !ids.length ? '' :
-    '<h2>Logged</h2><div class="card">' + ids.map(id=>{
+    '<h2>Logged</h2><div class="panel">' + ids.map(id=>{
       const f = foodById(id); if(!f) return '';
       const n = day[id];
       return `<div class="item">
-        <span class="emoji">${f.e}</span>
+        <span class="glyph">${f.e}</span>
         <div class="grow"><div class="nm trunc">${f.n}${n>1?` ×${n}`:''}</div>
           <div class="meta mono">${f.p*n}g P · ${f.k*n} kcal · ${money(f.c*n)}</div></div>
         <div class="step">
@@ -479,12 +661,12 @@ function renderEat(){
   $('foodList').innerHTML = FOODS.filter(f=>f.cat===foodCat).map(f=>{
     const n = day[f.id]||0;
     return `<div class="item">
-      <span class="emoji">${f.e}</span>
+      <span class="glyph">${f.e}</span>
       <div class="grow"><div class="nm trunc">${f.n}</div>
         <div class="meta mono">${f.s} · ${f.p}g P · ${f.k} kcal · ${money(f.c)}</div></div>
       <div class="step">
         <button onclick="eat('${f.id}',-1)">−</button>
-        <span class="n mono" style="${n?'':'color:var(--dim)'}">${n}</span>
+        <span class="n mono" style="${n?'':'color:var(--muted)'}">${n}</span>
         <button onclick="eat('${f.id}',1)">+</button>
       </div></div>`;
   }).join('');
@@ -536,15 +718,15 @@ function renderShop(){
     const q = S.basket[it.id]||0, pr = priceOf(it), on = !!S.checked[it.id];
     return `<div class="item ${on?'done':''}">
       <input type="checkbox" class="cb" ${on?'checked':''} onchange="toggleCheck('${it.id}')">
-      <span class="emoji">${it.e}</span>
+      <span class="glyph">${it.e}</span>
       <div class="grow"><div class="nm trunc">${it.n}</div>
         <div class="meta mono">$<input type="number" inputmode="decimal" step="0.05" value="${pr}"
              onchange="setPrice('${it.id}',this.value)"
-             style="width:62px;padding:2px 5px;font-size:11.5px;display:inline-block;border-radius:6px"> / ${it.u}
-          ${q?` · <b style="color:var(--tx)">${money(pr*q)}</b>/wk`:''}</div></div>
+             style="width:62px;padding:2px 5px;font-size:12px;display:inline-block;border-radius:7px"> / ${it.u}
+          ${q?` · <b style="color:var(--ink)">${money(pr*q)}</b>/wk`:''}</div></div>
       <div class="step">
         <button onclick="qty('${it.id}',-1)">−</button>
-        <span class="n mono" style="${q?'':'color:var(--dim)'}">${q}</span>
+        <span class="n mono" style="${q?'':'color:var(--muted)'}">${q}</span>
         <button onclick="qty('${it.id}',1)">+</button>
       </div></div>`;
   }).join('');
@@ -587,7 +769,7 @@ function renderSpend(){
     <div class="item"><div class="grow"><div class="nm">${f.n}</div>${f.m?`<div class="meta">${f.m}</div>`:''}</div>
       <input type="number" inputmode="decimal" value="${S.fixed[f.id]}" style="width:92px"
         onchange="setFixed('${f.id}',this.value)"></div>`).join('') + `
-    <div class="item"><div class="grow"><div class="nm" style="color:var(--accent)">Groceries</div>
+    <div class="item"><div class="grow"><div class="nm" style="color:var(--leaf)">Groceries</div>
       <div class="meta">your monthly food budget</div></div>
       <input type="number" inputmode="decimal" value="${S.gBudget}" style="width:92px"
         onchange="setBudget(this.value)"></div>`;
@@ -596,10 +778,10 @@ function renderSpend(){
   const left = S.gBudget - spentG;
   $('gSpent').textContent = money0(spentG);
   $('gLeft').textContent = money0(left);
-  $('gLeft').style.color = left<0 ? 'var(--bad)' : 'var(--accent)';
+  $('gLeft').style.color = left<0 ? 'var(--bad)' : 'var(--leaf)';
   const pct = Math.min(100, spentG/S.gBudget*100);
   $('gBar').style.width = pct+'%';
-  $('gBar').style.background = left<0 ? 'var(--bad)' : (pct>85?'var(--warn)':'var(--accent)');
+  $('gBar').style.background = left<0 ? 'var(--bad)' : (pct>85?'var(--amber)':'var(--leaf)');
   $('daysLeft').textContent = daysLeft();
   $('safeDay').textContent = money(Math.max(0,left)/daysLeft());
 
@@ -607,7 +789,7 @@ function renderSpend(){
   $('spendList').innerHTML = !rows.length
     ? '<div class="empty">No shops logged yet.</div>'
     : rows.map(s=>`<div class="item">
-        <span class="emoji">${s.cat==='out'?'🌯':(s.cat==='other'?'📦':'🛒')}</span>
+        <span class="glyph">${s.cat==='out'?'🌯':(s.cat==='other'?'📦':'🛒')}</span>
         <div class="grow"><div class="nm trunc">${s.label}</div>
           <div class="meta mono">${s.date}</div></div>
         <span class="mono" style="font-weight:650">${money(s.amt)}</span>
@@ -660,7 +842,7 @@ function renderWeight(){
   $('wAvg').textContent  = avg ? avg.toFixed(1) : '—';
   const r = ratePerWeek();
   $('wRate').textContent = r==null ? '—' : (r>0?'+':'') + r.toFixed(2);
-  $('wRate').style.color = r==null ? '' : (r < -0.2 ? 'var(--accent)' : (r>0.1?'var(--bad)':'var(--warn)'));
+  $('wRate').style.color = r==null ? '' : (r < -0.2 ? 'var(--leaf)' : (r>0.1?'var(--bad)':'var(--amber)'));
   $('wTogo').textContent = ((avg??cur) - S.goal).toFixed(1);
 
   // projection
@@ -699,16 +881,16 @@ function chartSVG(){
   const area = `${px(x0)},${H-PAD} ${pts} ${px(x1)},${H-PAD}`;
   return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
     <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#3ddc84" stop-opacity=".26"/>
-      <stop offset="100%" stop-color="#3ddc84" stop-opacity="0"/></linearGradient></defs>
+      <stop offset="0%" stop-color="#1f6b4a" stop-opacity=".22"/>
+      <stop offset="100%" stop-color="#1f6b4a" stop-opacity="0"/></linearGradient></defs>
     <polygon points="${area}" fill="url(#g)"/>
-    <line x1="${PAD}" y1="${gy}" x2="${W-PAD}" y2="${gy}" stroke="#8b96a3" stroke-width="1" stroke-dasharray="5 5"/>
-    <text x="${W-PAD}" y="${gy-7}" fill="#8b96a3" font-size="11" text-anchor="end">goal ${S.goal}</text>
-    <polyline points="${pts}" fill="none" stroke="#3ddc84" stroke-width="2.5"
+    <line x1="${PAD}" y1="${gy}" x2="${W-PAD}" y2="${gy}" stroke="#5e6a5c" stroke-width="1" stroke-dasharray="5 5"/>
+    <text x="${W-PAD}" y="${gy-7}" fill="#5e6a5c" font-size="11" font-family="Outfit,sans-serif" text-anchor="end">goal ${S.goal}</text>
+    <polyline points="${pts}" fill="none" stroke="#1f6b4a" stroke-width="2.5"
       stroke-linejoin="round" stroke-linecap="round"/>
-    <circle cx="${px(xs[xs.length-1])}" cy="${py(w[w.length-1].lb)}" r="4.5" fill="#3ddc84"/>
-    <text x="${PAD}" y="${H-6}" fill="#8b96a3" font-size="11">${w[0].date.slice(5)}</text>
-    <text x="${W-PAD}" y="${H-6}" fill="#8b96a3" font-size="11" text-anchor="end">${w[w.length-1].date.slice(5)}</text>
+    <circle cx="${px(xs[xs.length-1])}" cy="${py(w[w.length-1].lb)}" r="4.5" fill="#1f6b4a"/>
+    <text x="${PAD}" y="${H-6}" fill="#5e6a5c" font-size="11" font-family="Outfit,sans-serif">${w[0].date.slice(5)}</text>
+    <text x="${W-PAD}" y="${H-6}" fill="#5e6a5c" font-size="11" font-family="Outfit,sans-serif" text-anchor="end">${w[w.length-1].date.slice(5)}</text>
   </svg>`;
 }
 
