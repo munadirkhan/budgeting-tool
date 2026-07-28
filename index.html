@@ -1,0 +1,746 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0b0d10">
+<link rel="manifest" href="manifest.json">
+<title>Cost of Eating</title>
+<style>
+  :root{
+    --bg:#0b0d10; --card:#14181d; --card2:#1b2027; --line:#252b33;
+    --tx:#e8edf2; --dim:#8b96a3; --accent:#3ddc84; --warn:#ffb02e; --bad:#ff5a5a;
+    --blue:#5aa9ff;
+    --safe-b: env(safe-area-inset-bottom, 0px);
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0}
+  body{
+    background:var(--bg); color:var(--tx);
+    font:15px/1.4 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    padding-bottom:calc(76px + var(--safe-b));
+    overscroll-behavior-y:none;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:14px 14px 24px}
+  h1{font-size:20px;margin:2px 0 2px;letter-spacing:-.02em}
+  h2{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:var(--dim);margin:22px 0 8px;font-weight:600}
+  .sub{color:var(--dim);font-size:13px;margin:0 0 14px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+  .row{display:flex;align-items:center;gap:10px}
+  .between{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .grow{flex:1;min-width:0}
+  .mono{font-variant-numeric:tabular-nums}
+  .big{font-size:26px;font-weight:700;letter-spacing:-.02em}
+  .lbl{font-size:12px;color:var(--dim)}
+  .trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  /* progress */
+  .bar{height:8px;background:var(--card2);border-radius:99px;overflow:hidden;margin-top:8px}
+  .bar > i{display:block;height:100%;border-radius:99px;transition:width .25s}
+  /* stepper */
+  .step{display:flex;align-items:center;gap:0;background:var(--card2);border-radius:11px;overflow:hidden;flex:none}
+  .step button{
+    width:42px;height:40px;border:0;background:transparent;color:var(--tx);
+    font-size:21px;line-height:1;cursor:pointer;font-weight:500
+  }
+  .step button:active{background:#2b323b}
+  .step .n{min-width:34px;text-align:center;font-size:15px;font-weight:600}
+  .item{display:flex;align-items:center;gap:11px;padding:9px 0;border-bottom:1px solid var(--line)}
+  .item:last-child{border-bottom:0}
+  .emoji{font-size:21px;width:26px;text-align:center;flex:none}
+  .nm{font-size:14.5px;font-weight:500}
+  .meta{font-size:11.5px;color:var(--dim);margin-top:1px}
+  /* nav */
+  nav{
+    position:fixed;left:0;right:0;bottom:0;z-index:50;
+    background:rgba(11,13,16,.93);backdrop-filter:blur(14px);
+    border-top:1px solid var(--line);
+    padding-bottom:var(--safe-b);
+    display:flex;
+  }
+  nav button{
+    flex:1;background:0;border:0;color:var(--dim);padding:9px 0 8px;
+    font-size:10.5px;font-weight:600;letter-spacing:.03em;cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:3px
+  }
+  nav button .ic{font-size:19px;line-height:1}
+  nav button.on{color:var(--accent)}
+  .tab{display:none}
+  .tab.on{display:block}
+  /* chips */
+  .chips{display:flex;gap:7px;overflow-x:auto;padding:2px 0 10px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{
+    flex:none;background:var(--card2);border:1px solid var(--line);color:var(--dim);
+    padding:7px 13px;border-radius:99px;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap
+  }
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#08110c;font-weight:600}
+  /* inputs */
+  input[type=number],input[type=text],input[type=date]{
+    background:var(--card2);border:1px solid var(--line);color:var(--tx);
+    border-radius:10px;padding:10px 11px;font-size:16px;width:100%;font-family:inherit
+  }
+  input:focus{outline:none;border-color:var(--accent)}
+  .btn{
+    background:var(--accent);color:#08110c;border:0;border-radius:11px;
+    padding:12px 16px;font-size:15px;font-weight:650;cursor:pointer;font-family:inherit
+  }
+  .btn.ghost{background:var(--card2);color:var(--tx);border:1px solid var(--line);font-weight:500}
+  .btn:active{opacity:.75}
+  .btn.sm{padding:9px 13px;font-size:13.5px}
+  .cb{width:23px;height:23px;accent-color:var(--accent);flex:none}
+  .done{opacity:.38;text-decoration:line-through}
+  .del{background:0;border:0;color:var(--dim);font-size:19px;padding:4px 6px;cursor:pointer;flex:none}
+  .g2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+  .stat{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px}
+  .note{font-size:12.5px;color:var(--dim);line-height:1.5}
+  .pill{font-size:11px;font-weight:600;padding:3px 8px;border-radius:99px;background:var(--card2);color:var(--dim)}
+  .pill.ok{background:rgba(61,220,132,.14);color:var(--accent)}
+  .pill.warn{background:rgba(255,176,46,.14);color:var(--warn)}
+  .pill.bad{background:rgba(255,90,90,.14);color:var(--bad)}
+  .empty{color:var(--dim);font-size:13.5px;text-align:center;padding:18px 0}
+  hr{border:0;border-top:1px solid var(--line);margin:14px 0}
+</style>
+</head>
+<body>
+
+<!-- ================= EAT ================= -->
+<section class="tab on" id="tab-eat"><div class="wrap">
+  <div class="between">
+    <div>
+      <h1>Today</h1>
+      <p class="sub" id="eatDate" style="margin:0"></p>
+    </div>
+    <div class="row" style="gap:6px">
+      <button class="btn ghost sm" onclick="shiftDay(-1)">‹</button>
+      <button class="btn ghost sm" onclick="shiftDay(1)">›</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="between">
+      <div><div class="lbl">Protein</div><div class="big mono" id="pNow">0<span style="font-size:15px;color:var(--dim)">g</span></div></div>
+      <div style="text-align:right"><div class="lbl">of target</div><div class="mono" id="pGoal" style="font-size:15px;color:var(--dim)"></div></div>
+    </div>
+    <div class="bar"><i id="pBar" style="background:var(--accent);width:0%"></i></div>
+
+    <div class="between" style="margin-top:16px">
+      <div><div class="lbl">Calories</div><div class="big mono" id="kNow">0</div></div>
+      <div style="text-align:right"><div class="lbl">of target</div><div class="mono" id="kGoal" style="font-size:15px;color:var(--dim)"></div></div>
+    </div>
+    <div class="bar"><i id="kBar" style="background:var(--blue);width:0%"></i></div>
+
+    <hr>
+    <div class="between">
+      <span class="lbl">Food cost today</span>
+      <span class="mono" id="eatCost" style="font-weight:650">$0.00</span>
+    </div>
+  </div>
+
+  <div id="eaten"></div>
+
+  <h2>Add food</h2>
+  <div class="chips" id="foodCats"></div>
+  <div class="card" id="foodList"></div>
+  <p class="note">Servings are real portions, not 100 g lab units. Cost is your share of the grocery item.</p>
+</div></section>
+
+<!-- ================= SHOP ================= -->
+<section class="tab" id="tab-shop"><div class="wrap">
+  <h1>Basket</h1>
+  <p class="sub">Weekly quantities. Drives your grocery budget and your daily macros.</p>
+
+  <div class="g3">
+    <div class="stat"><div class="lbl">Per week</div><div class="mono" id="bWeek" style="font-size:19px;font-weight:700">$0</div></div>
+    <div class="stat"><div class="lbl">Per month</div><div class="mono" id="bMonth" style="font-size:19px;font-weight:700">$0</div></div>
+    <div class="stat"><div class="lbl">P / day</div><div class="mono" id="bProt" style="font-size:19px;font-weight:700">0g</div></div>
+  </div>
+  <div class="card" style="margin-top:10px">
+    <div class="between"><span class="lbl">Calories/day from basket</span><span class="mono" id="bKcal" style="font-weight:650">0</span></div>
+    <div class="between" style="margin-top:8px"><span class="lbl">vs grocery budget</span><span id="bVs" class="pill">—</span></div>
+  </div>
+
+  <div class="between" style="margin:20px 0 8px">
+    <h2 style="margin:0">Store run</h2>
+    <button class="btn ghost sm" onclick="clearChecks()">Uncheck all</button>
+  </div>
+  <div class="chips" id="shopCats"></div>
+  <div class="card" id="shopList"></div>
+  <p class="note">Prices are London/Ontario ballpark (No Frills, Food Basics, Adonis / halal butcher). Tap a price to change it — it saves.</p>
+</div></section>
+
+<!-- ================= SPEND ================= -->
+<section class="tab" id="tab-spend"><div class="wrap">
+  <h1>Money</h1>
+  <p class="sub" id="spendMonth"></p>
+
+  <div class="card">
+    <div class="between">
+      <div><div class="lbl">All-in per month</div><div class="big mono" id="allIn">$0</div></div>
+      <div style="text-align:right"><div class="lbl">per day</div><div class="mono" id="perDay" style="font-size:15px;color:var(--dim)"></div></div>
+    </div>
+  </div>
+
+  <h2>Fixed</h2>
+  <div class="card" id="fixedList"></div>
+
+  <h2>Grocery budget this month</h2>
+  <div class="card">
+    <div class="between">
+      <div><div class="lbl">Spent</div><div class="big mono" id="gSpent">$0</div></div>
+      <div style="text-align:right"><div class="lbl">Left</div><div class="mono big" id="gLeft" style="font-size:26px">$0</div></div>
+    </div>
+    <div class="bar"><i id="gBar" style="background:var(--accent);width:0%"></i></div>
+    <div class="between" style="margin-top:12px">
+      <span class="lbl">Safe to spend / day (<span id="daysLeft">0</span> days left)</span>
+      <span class="mono" id="safeDay" style="font-weight:650">$0</span>
+    </div>
+  </div>
+
+  <h2>Log a shop</h2>
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <input id="spLabel" type="text" placeholder="No Frills" class="grow">
+      <input id="spAmt" type="number" inputmode="decimal" placeholder="0.00" style="width:96px">
+      <button class="btn" onclick="addSpend()">Add</button>
+    </div>
+    <div class="row" style="gap:8px;margin-top:10px">
+      <input id="spDate" type="date" class="grow">
+      <select id="spCat" style="background:var(--card2);border:1px solid var(--line);color:var(--tx);border-radius:10px;padding:11px;font-size:15px;font-family:inherit">
+        <option value="groceries">Groceries</option>
+        <option value="out">Eating out</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+  </div>
+  <div class="card" id="spendList"></div>
+</div></section>
+
+<!-- ================= WEIGHT ================= -->
+<section class="tab" id="tab-weight"><div class="wrap">
+  <h1>Cut</h1>
+  <p class="sub" id="cutSub"></p>
+
+  <div class="g3">
+    <div class="stat"><div class="lbl">7-day avg</div><div class="mono" id="wAvg" style="font-size:19px;font-weight:700">—</div></div>
+    <div class="stat"><div class="lbl">Rate</div><div class="mono" id="wRate" style="font-size:19px;font-weight:700">—</div></div>
+    <div class="stat"><div class="lbl">To go</div><div class="mono" id="wTogo" style="font-size:19px;font-weight:700">—</div></div>
+  </div>
+
+  <div class="card" style="margin-top:10px">
+    <div id="chart"></div>
+    <div class="between" style="margin-top:10px">
+      <span class="lbl">Projected 185 lb</span>
+      <span class="mono" id="wProj" style="font-weight:650">—</span>
+    </div>
+  </div>
+
+  <h2>Weigh in</h2>
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <input id="wDate" type="date" class="grow">
+      <input id="wVal" type="number" inputmode="decimal" step="0.1" placeholder="lb" style="width:96px">
+      <button class="btn" onclick="addWeight()">Log</button>
+    </div>
+    <p class="note" style="margin:10px 0 0">Same time every morning, after the bathroom, before food. Daily noise is water — only the 7-day average means anything.</p>
+  </div>
+  <div class="card" id="wList"></div>
+
+  <h2>Targets</h2>
+  <div class="card">
+    <div class="item"><div class="grow"><div class="nm">Protein / day</div><div class="meta">1.0 g per lb of goal weight</div></div>
+      <input type="number" inputmode="numeric" id="tP" style="width:88px" onchange="setTarget('p',this.value)"></div>
+    <div class="item"><div class="grow"><div class="nm">Calories / day</div><div class="meta">~500 under maintenance = 1 lb/week</div></div>
+      <input type="number" inputmode="numeric" id="tK" style="width:88px" onchange="setTarget('kcal',this.value)"></div>
+  </div>
+
+  <h2>Data</h2>
+  <div class="card">
+    <div class="row" style="gap:8px">
+      <button class="btn ghost sm grow" onclick="exportData()">Export backup</button>
+      <button class="btn ghost sm grow" onclick="importData()">Import</button>
+    </div>
+    <p class="note" style="margin:10px 0 0">Saved in this browser only. Export before you clear Safari data or switch phones.</p>
+  </div>
+</div></section>
+
+<nav>
+  <button class="on" data-tab="eat"><span class="ic">🍗</span>Eat</button>
+  <button data-tab="shop"><span class="ic">🛒</span>Shop</button>
+  <button data-tab="spend"><span class="ic">💵</span>Spend</button>
+  <button data-tab="weight"><span class="ic">📉</span>Weight</button>
+</nav>
+
+<script>
+/* ---------------- data ---------------- */
+// serving = one realistic portion. p = protein g, k = kcal, c = $ for that portion.
+const FOODS = [
+  // protein
+  {id:'chkb', e:'🍗', n:'Chicken breast',   s:'150 g cooked', p:46, k:250, c:2.30, cat:'Protein'},
+  {id:'chkt', e:'🍖', n:'Chicken thigh',    s:'150 g cooked', p:39, k:320, c:1.70, cat:'Protein'},
+  {id:'beef', e:'🥩', n:'Extra-lean beef',  s:'150 g cooked', p:36, k:290, c:2.90, cat:'Protein'},
+  {id:'tuna', e:'🐟', n:'Canned tuna',      s:'1 can drained',p:26, k:110, c:1.80, cat:'Protein'},
+  {id:'til',  e:'🐠', n:'Tilapia / basa',   s:'170 g fillet', p:34, k:180, c:2.55, cat:'Protein'},
+  {id:'egg',  e:'🥚', n:'Eggs',             s:'2 large',      p:12, k:140, c:0.70, cat:'Protein'},
+  {id:'ewh',  e:'🍳', n:'Egg whites',       s:'1 cup',        p:26, k:125, c:1.70, cat:'Protein'},
+  {id:'lent', e:'🫘', n:'Lentils',          s:'1 cup cooked', p:18, k:230, c:0.50, cat:'Protein'},
+  // dairy
+  {id:'gyog', e:'🥛', n:'Greek yogurt 0%',  s:'200 g',        p:20, k:120, c:1.45, cat:'Dairy'},
+  {id:'cott', e:'🧀', n:'Cottage cheese 1%',s:'150 g',        p:17, k:110, c:1.35, cat:'Dairy'},
+  {id:'whey', e:'🥤', n:'Whey protein',     s:'1 scoop',      p:25, k:120, c:1.30, cat:'Dairy'},
+  {id:'milk', e:'🐄', n:'Milk 2%',          s:'250 ml',       p:8,  k:125, c:0.63, cat:'Dairy'},
+  // carbs
+  {id:'rice', e:'🍚', n:'Rice (cooker)',    s:'1 cup cooked', p:4,  k:205, c:0.20, cat:'Carbs'},
+  {id:'oats', e:'🥣', n:'Oats',             s:'80 g dry',     p:10, k:300, c:0.28, cat:'Carbs'},
+  {id:'pota', e:'🥔', n:'Potato',           s:'1 medium',     p:4,  k:160, c:0.40, cat:'Carbs'},
+  {id:'brd',  e:'🍞', n:'Whole wheat bread',s:'2 slices',     p:8,  k:160, c:0.33, cat:'Carbs'},
+  {id:'pasta',e:'🍝', n:'Pasta',            s:'85 g dry',     p:11, k:300, c:0.24, cat:'Carbs'},
+  {id:'ramn', e:'🍜', n:'Instant noodles',  s:'1 pack',       p:8,  k:380, c:0.80, cat:'Carbs'},
+  {id:'tort', e:'🌯', n:'Tortilla wrap',    s:'1 large',      p:6,  k:200, c:0.40, cat:'Carbs'},
+  // veg + fruit
+  {id:'fveg', e:'🥦', n:'Frozen mixed veg', s:'150 g',        p:4,  k:70,  c:0.60, cat:'Veg'},
+  {id:'broc', e:'🥬', n:'Broccoli',         s:'150 g',        p:4,  k:50,  c:1.00, cat:'Veg'},
+  {id:'onto', e:'🧅', n:'Onion + tomato',   s:'in a dish',    p:2,  k:60,  c:0.55, cat:'Veg'},
+  {id:'sald', e:'🥗', n:'Salad + dressing', s:'1 bowl',       p:2,  k:120, c:1.00, cat:'Veg'},
+  {id:'ban',  e:'🍌', n:'Banana',           s:'1 medium',     p:1,  k:105, c:0.37, cat:'Veg'},
+  {id:'appl', e:'🍎', n:'Apple',            s:'1 medium',     p:0,  k:95,  c:0.60, cat:'Veg'},
+  // fats + extras
+  {id:'oil',  e:'🫒', n:'Cooking oil',      s:'1 tbsp',       p:0,  k:120, c:0.15, cat:'Extras'},
+  {id:'pb',   e:'🥜', n:'Peanut butter',    s:'2 tbsp',       p:8,  k:190, c:0.35, cat:'Extras'},
+  {id:'sauc', e:'🧂', n:'Sauce / seasoning',s:'a meal’s worth', p:0, k:60, c:0.35, cat:'Extras'},
+  {id:'bisc', e:'🍪', n:'Biscoff',          s:'2 cookies',    p:1,  k:115, c:0.30, cat:'Extras'},
+  {id:'bar',  e:'🍫', n:'Protein bar',      s:'1 bar',        p:20, k:220, c:2.20, cat:'Extras'},
+  {id:'diet', e:'🥤', n:'Diet pop',         s:'1 can',        p:0,  k:0,   c:0.58, cat:'Extras'},
+  // out
+  {id:'shwa', e:'🌯', n:'Shawarma plate',   s:'1 order',      p:45, k:900, c:16.00, cat:'Out'},
+  {id:'camp', e:'🏫', n:'Campus meal',      s:'1 meal',       p:25, k:750, c:13.00, cat:'Out'},
+  {id:'pizz', e:'🍕', n:'Pizza slices',     s:'2 slices',     p:20, k:640, c:8.00,  cat:'Out'},
+];
+
+// basket unit = how you actually buy it. q = units per week, st = stepper increment.
+// p/k are protein g and kcal in ONE unit. Meat values are per kg raw.
+const ITEMS = [
+  {id:'i_chk',  e:'🍗', n:'Chicken breast (halal)', u:'kg',        pr:11.00, q:1.5,  st:0.5,  p:230, k:1150, cat:'Meat'},
+  {id:'i_thi',  e:'🍖', n:'Chicken thigh (halal)',  u:'kg',        pr:8.50,  q:0,    st:0.5,  p:190, k:1750, cat:'Meat'},
+  {id:'i_bef',  e:'🥩', n:'Extra-lean ground beef', u:'kg',        pr:14.00, q:0.5,  st:0.5,  p:200, k:1700, cat:'Meat'},
+  {id:'i_tun',  e:'🐟', n:'Canned tuna',            u:'can',       pr:1.80,  q:3,    st:1,    p:26,  k:110,  cat:'Meat'},
+  {id:'i_til',  e:'🐠', n:'Frozen tilapia/basa',    u:'bag 800 g', pr:12.00, q:0,    st:0.5,  p:160, k:800,  cat:'Meat'},
+
+  {id:'i_egg',  e:'🥚', n:'Eggs',                   u:'dozen',     pr:4.20,  q:1.5,  st:0.5,  p:72,  k:840,  cat:'Dairy'},
+  {id:'i_gyo',  e:'🥛', n:'Greek yogurt 0%',        u:'750 g tub', pr:5.50,  q:2,    st:1,    p:75,  k:450,  cat:'Dairy'},
+  {id:'i_cot',  e:'🧀', n:'Cottage cheese 1%',      u:'500 g',     pr:4.50,  q:0,    st:1,    p:55,  k:370,  cat:'Dairy'},
+  {id:'i_mlk',  e:'🐄', n:'Milk 2%',                u:'2 L',       pr:5.00,  q:0.75, st:0.25, p:68,  k:1000, cat:'Dairy'},
+  {id:'i_why',  e:'🥤', n:'Whey protein',           u:'scoop',     pr:1.30,  q:7,    st:1,    p:25,  k:120,  cat:'Dairy'},
+
+  {id:'i_ric',  e:'🍚', n:'Basmati rice',           u:'kg dry',    pr:3.20,  q:0.5,  st:0.5,  p:75,  k:3600, cat:'Staples'},
+  {id:'i_oat',  e:'🥣', n:'Large flake oats',       u:'kg',        pr:3.50,  q:0.25, st:0.25, p:130, k:3800, cat:'Staples'},
+  {id:'i_pas',  e:'🍝', n:'Pasta',                  u:'900 g box', pr:2.50,  q:0.25, st:0.25, p:110, k:3200, cat:'Staples'},
+  {id:'i_brd',  e:'🍞', n:'Whole wheat bread',      u:'loaf',      pr:3.30,  q:0.75, st:0.25, p:80,  k:1600, cat:'Staples'},
+  {id:'i_pot',  e:'🥔', n:'Potatoes',               u:'5 lb bag',  pr:4.50,  q:0.25, st:0.25, p:45,  k:1750, cat:'Staples'},
+  {id:'i_tor',  e:'🌯', n:'Tortilla wraps',         u:'pack of 10',pr:4.00,  q:0,    st:0.5,  p:60,  k:2000, cat:'Staples'},
+  {id:'i_ram',  e:'🍜', n:'Instant noodles',        u:'pack',      pr:0.80,  q:1,    st:1,    p:8,   k:380,  cat:'Staples'},
+
+  {id:'i_fvg',  e:'🥦', n:'Frozen mixed veg',       u:'750 g bag', pr:3.00,  q:2,    st:1,    p:20,  k:350,  cat:'Produce'},
+  {id:'i_bro',  e:'🥬', n:'Broccoli',               u:'crown',     pr:2.50,  q:1,    st:1,    p:9,   k:110,  cat:'Produce'},
+  {id:'i_oni',  e:'🧅', n:'Onions',                 u:'3 lb bag',  pr:3.50,  q:0.5,  st:0.25, p:12,  k:550,  cat:'Produce'},
+  {id:'i_tom',  e:'🍅', n:'Tomatoes',               u:'lb',        pr:2.50,  q:1,    st:1,    p:4,   k:80,   cat:'Produce'},
+  {id:'i_ban',  e:'🍌', n:'Bananas',                u:'bunch of 6',pr:2.20,  q:1,    st:1,    p:8,   k:630,  cat:'Produce'},
+  {id:'i_sal',  e:'🥗', n:'Salad greens',           u:'box',       pr:4.00,  q:0.5,  st:0.25, p:6,   k:80,   cat:'Produce'},
+
+  {id:'i_oil',  e:'🫒', n:'Cooking oil',            u:'500 ml',    pr:4.00,  q:0.25, st:0.25, p:0,   k:4000, cat:'Pantry'},
+  {id:'i_spi',  e:'🧂', n:'Spices / seasoning',     u:'restock',   pr:8.00,  q:0.25, st:0.25, p:0,   k:0,    cat:'Pantry'},
+  {id:'i_sau',  e:'🥫', n:'Sauces (hot, soy, etc)', u:'bottle',    pr:4.00,  q:0.5,  st:0.25, p:0,   k:400,  cat:'Pantry'},
+  {id:'i_pb',   e:'🥜', n:'Peanut butter',          u:'500 g jar', pr:5.50,  q:0.25, st:0.25, p:125, k:3000, cat:'Pantry'},
+  {id:'i_gar',  e:'🧄', n:'Garlic / ginger paste',  u:'jar',       pr:3.50,  q:0.25, st:0.25, p:0,   k:200,  cat:'Pantry'},
+
+  {id:'i_bis',  e:'🍪', n:'Biscoff',                u:'pack',      pr:4.00,  q:0.25, st:0.25, p:8,   k:1200, cat:'Treats'},
+  {id:'i_bar',  e:'🍫', n:'Protein bars',           u:'box of 5',  pr:11.00, q:0.25, st:0.25, p:100, k:1100, cat:'Treats'},
+  {id:'i_pop',  e:'🥤', n:'Diet pop',               u:'12 pack',   pr:7.00,  q:0.5,  st:0.25, p:0,   k:0,    cat:'Treats'},
+];
+
+const FIXED = [
+  {id:'rent',  n:'Rent',              m:'12-month lease', v:950},
+  {id:'util',  n:'Utilities',         m:'hydro, water, internet', v:50},
+  {id:'phone', n:'Phone',             m:'', v:45},
+  {id:'house', n:'Household + toiletries', m:'soap, detergent, foil', v:25},
+  {id:'out',   n:'Eating out',        m:'campus, shawarma runs', v:60},
+];
+
+const WEEKS_PER_MONTH = 4.345;
+
+/* ---------------- state ---------------- */
+const KEY = 'coe.v2';
+const todayISO = () => new Date().toLocaleDateString('en-CA');
+
+const DEFAULTS = () => ({
+  log: {},                                        // {date: {foodId: count}}
+  basket: Object.fromEntries(ITEMS.map(i=>[i.id,i.q])),
+  price:  {},                                     // {itemId: overridden price}
+  checked:{},
+  spend:  [],                                     // {id,date,label,amt,cat}
+  fixed:  Object.fromEntries(FIXED.map(f=>[f.id,f.v])),
+  gBudget: 450,
+  targets:{p:185, kcal:2300},
+  weights:[],                                     // {date, lb}
+  start: 220, goal: 185,
+  day: todayISO(),
+});
+
+let S;
+try { S = Object.assign(DEFAULTS(), JSON.parse(localStorage.getItem(KEY)||'{}')); }
+catch(e){ S = DEFAULTS(); }
+S.day = todayISO();
+
+const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
+const $ = id => document.getElementById(id);
+const money = n => '$' + (Math.round(n*100)/100).toLocaleString('en-CA',{minimumFractionDigits:2,maximumFractionDigits:2});
+const money0 = n => '$' + Math.round(n).toLocaleString('en-CA');
+const priceOf = it => (S.price[it.id] != null ? S.price[it.id] : it.pr);
+const foodById = id => FOODS.find(f=>f.id===id);
+
+/* ---------------- nav ---------------- */
+document.querySelectorAll('nav button').forEach(b=>{
+  b.onclick = () => {
+    document.querySelectorAll('nav button').forEach(x=>x.classList.toggle('on', x===b));
+    document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on', t.id==='tab-'+b.dataset.tab));
+    window.scrollTo(0,0);
+    renderAll();
+  };
+});
+
+/* ---------------- EAT ---------------- */
+let foodCat = 'Protein';
+const FOOD_CATS = [...new Set(FOODS.map(f=>f.cat))];
+
+function shiftDay(d){
+  const dt = new Date(S.day + 'T12:00:00');
+  dt.setDate(dt.getDate()+d);
+  S.day = dt.toLocaleDateString('en-CA');
+  save(); renderEat();
+}
+function eat(id, d){
+  const day = S.log[S.day] || (S.log[S.day] = {});
+  day[id] = Math.max(0, (day[id]||0) + d);
+  if(!day[id]) delete day[id];
+  if(!Object.keys(day).length) delete S.log[S.day];
+  save(); renderEat();
+}
+function dayTotals(date){
+  const day = S.log[date] || {};
+  let p=0,k=0,c=0;
+  for(const [id,n] of Object.entries(day)){
+    const f = foodById(id); if(!f) continue;
+    p += f.p*n; k += f.k*n; c += f.c*n;
+  }
+  return {p,k,c};
+}
+
+function renderEat(){
+  const dt = new Date(S.day+'T12:00:00');
+  const isToday = S.day === todayISO();
+  $('eatDate').textContent = (isToday ? 'Today · ' : '') +
+    dt.toLocaleDateString('en-CA',{weekday:'short', month:'short', day:'numeric'});
+
+  const t = dayTotals(S.day);
+  const pPct = Math.min(100, t.p/S.targets.p*100);
+  const kPct = Math.min(100, t.k/S.targets.kcal*100);
+  $('pNow').innerHTML = Math.round(t.p) + '<span style="font-size:15px;color:var(--dim)">g</span>';
+  $('kNow').textContent = Math.round(t.k).toLocaleString();
+  $('pGoal').textContent = S.targets.p + 'g';
+  $('kGoal').textContent = S.targets.kcal.toLocaleString();
+  $('pBar').style.width = pPct+'%';
+  $('kBar').style.width = kPct+'%';
+  $('kBar').style.background = t.k > S.targets.kcal ? 'var(--bad)' : 'var(--blue)';
+  $('eatCost').textContent = money(t.c);
+
+  // eaten list
+  const day = S.log[S.day] || {};
+  const ids = Object.keys(day);
+  $('eaten').innerHTML = !ids.length ? '' :
+    '<h2>Logged</h2><div class="card">' + ids.map(id=>{
+      const f = foodById(id); if(!f) return '';
+      const n = day[id];
+      return `<div class="item">
+        <span class="emoji">${f.e}</span>
+        <div class="grow"><div class="nm trunc">${f.n}${n>1?` ×${n}`:''}</div>
+          <div class="meta mono">${f.p*n}g P · ${f.k*n} kcal · ${money(f.c*n)}</div></div>
+        <div class="step">
+          <button onclick="eat('${id}',-1)">−</button>
+          <span class="n mono">${n}</span>
+          <button onclick="eat('${id}',1)">+</button>
+        </div></div>`;
+    }).join('') + '</div>';
+
+  // picker
+  $('foodCats').innerHTML = FOOD_CATS.map(c=>
+    `<button class="chip ${c===foodCat?'on':''}" onclick="foodCat='${c}';renderEat()">${c}</button>`).join('');
+  $('foodList').innerHTML = FOODS.filter(f=>f.cat===foodCat).map(f=>{
+    const n = day[f.id]||0;
+    return `<div class="item">
+      <span class="emoji">${f.e}</span>
+      <div class="grow"><div class="nm trunc">${f.n}</div>
+        <div class="meta mono">${f.s} · ${f.p}g P · ${f.k} kcal · ${money(f.c)}</div></div>
+      <div class="step">
+        <button onclick="eat('${f.id}',-1)">−</button>
+        <span class="n mono" style="${n?'':'color:var(--dim)'}">${n}</span>
+        <button onclick="eat('${f.id}',1)">+</button>
+      </div></div>`;
+  }).join('');
+}
+
+/* ---------------- SHOP ---------------- */
+let shopCat = 'All';
+const SHOP_CATS = ['All', ...new Set(ITEMS.map(i=>i.cat))];
+
+function qty(id, d){
+  const it = ITEMS.find(i=>i.id===id);
+  const v = Math.max(0, Math.round(((S.basket[id]||0) + d*it.st)*100)/100);
+  S.basket[id] = v; save(); renderShop();
+}
+function setPrice(id, v){
+  const n = parseFloat(v);
+  if(!isNaN(n) && n>=0) S.price[id] = n;
+  save(); renderShop();
+}
+function toggleCheck(id){ S.checked[id] = !S.checked[id]; save(); renderShop(); }
+function clearChecks(){ S.checked = {}; save(); renderShop(); }
+
+function basketTotals(){
+  let cost=0, p=0, k=0;
+  for(const it of ITEMS){
+    const q = S.basket[it.id]||0;
+    cost += priceOf(it)*q; p += it.p*q; k += it.k*q;
+  }
+  return {week:cost, month:cost*WEEKS_PER_MONTH, p:p/7, k:k/7};
+}
+
+function renderShop(){
+  const t = basketTotals();
+  $('bWeek').textContent  = money0(t.week);
+  $('bMonth').textContent = money0(t.month);
+  $('bProt').textContent  = Math.round(t.p)+'g';
+  $('bKcal').textContent  = Math.round(t.k).toLocaleString();
+
+  const diff = t.month - S.gBudget;
+  const vs = $('bVs');
+  vs.textContent = (diff>0?'+':'') + money0(diff) + (Math.abs(diff)<15 ? ' · on budget' : (diff>0?' over':' under'));
+  vs.className = 'pill ' + (diff>25?'bad':(diff>0?'warn':'ok'));
+
+  $('shopCats').innerHTML = SHOP_CATS.map(c=>
+    `<button class="chip ${c===shopCat?'on':''}" onclick="shopCat='${c}';renderShop()">${c}</button>`).join('');
+
+  const list = ITEMS.filter(i=>shopCat==='All'||i.cat===shopCat);
+  $('shopList').innerHTML = list.map(it=>{
+    const q = S.basket[it.id]||0, pr = priceOf(it), on = !!S.checked[it.id];
+    return `<div class="item ${on?'done':''}">
+      <input type="checkbox" class="cb" ${on?'checked':''} onchange="toggleCheck('${it.id}')">
+      <span class="emoji">${it.e}</span>
+      <div class="grow"><div class="nm trunc">${it.n}</div>
+        <div class="meta mono">$<input type="number" inputmode="decimal" step="0.05" value="${pr}"
+             onchange="setPrice('${it.id}',this.value)"
+             style="width:62px;padding:2px 5px;font-size:11.5px;display:inline-block;border-radius:6px"> / ${it.u}
+          ${q?` · <b style="color:var(--tx)">${money(pr*q)}</b>/wk`:''}</div></div>
+      <div class="step">
+        <button onclick="qty('${it.id}',-1)">−</button>
+        <span class="n mono" style="${q?'':'color:var(--dim)'}">${q}</span>
+        <button onclick="qty('${it.id}',1)">+</button>
+      </div></div>`;
+  }).join('');
+}
+
+/* ---------------- SPEND ---------------- */
+function monthKey(d){ return d.slice(0,7); }
+function daysInMonth(){ const n=new Date(); return new Date(n.getFullYear(), n.getMonth()+1, 0).getDate(); }
+function daysLeft(){ return daysInMonth() - new Date().getDate() + 1; }
+
+function setFixed(id,v){ const n=parseFloat(v); if(!isNaN(n)) S.fixed[id]=n; save(); renderSpend(); }
+function setBudget(v){ const n=parseFloat(v); if(!isNaN(n)) S.gBudget=n; save(); renderSpend(); renderShop(); }
+
+function addSpend(){
+  const amt = parseFloat($('spAmt').value);
+  if(isNaN(amt) || amt<=0) return;
+  S.spend.unshift({
+    id: Date.now(),
+    date: $('spDate').value || todayISO(),
+    label: ($('spLabel').value||'').trim() || 'Groceries',
+    amt, cat: $('spCat').value
+  });
+  $('spAmt').value=''; $('spLabel').value='';
+  save(); renderSpend();
+}
+function delSpend(id){ S.spend = S.spend.filter(s=>s.id!==id); save(); renderSpend(); }
+
+function renderSpend(){
+  const mk = monthKey(todayISO());
+  const now = new Date();
+  $('spendMonth').textContent = now.toLocaleDateString('en-CA',{month:'long', year:'numeric'});
+  if(!$('spDate').value) $('spDate').value = todayISO();
+
+  const fixedTotal = FIXED.reduce((a,f)=>a+(S.fixed[f.id]||0),0);
+  const allIn = fixedTotal + S.gBudget;
+  $('allIn').textContent = money0(allIn);
+  $('perDay').textContent = money0(allIn/30.4) + '/day';
+
+  $('fixedList').innerHTML = FIXED.map(f=>`
+    <div class="item"><div class="grow"><div class="nm">${f.n}</div>${f.m?`<div class="meta">${f.m}</div>`:''}</div>
+      <input type="number" inputmode="decimal" value="${S.fixed[f.id]}" style="width:92px"
+        onchange="setFixed('${f.id}',this.value)"></div>`).join('') + `
+    <div class="item"><div class="grow"><div class="nm" style="color:var(--accent)">Groceries</div>
+      <div class="meta">your monthly food budget</div></div>
+      <input type="number" inputmode="decimal" value="${S.gBudget}" style="width:92px"
+        onchange="setBudget(this.value)"></div>`;
+
+  const spentG = S.spend.filter(s=>s.cat==='groceries' && monthKey(s.date)===mk).reduce((a,s)=>a+s.amt,0);
+  const left = S.gBudget - spentG;
+  $('gSpent').textContent = money0(spentG);
+  $('gLeft').textContent = money0(left);
+  $('gLeft').style.color = left<0 ? 'var(--bad)' : 'var(--accent)';
+  const pct = Math.min(100, spentG/S.gBudget*100);
+  $('gBar').style.width = pct+'%';
+  $('gBar').style.background = left<0 ? 'var(--bad)' : (pct>85?'var(--warn)':'var(--accent)');
+  $('daysLeft').textContent = daysLeft();
+  $('safeDay').textContent = money(Math.max(0,left)/daysLeft());
+
+  const rows = S.spend.slice(0,40);
+  $('spendList').innerHTML = !rows.length
+    ? '<div class="empty">No shops logged yet.</div>'
+    : rows.map(s=>`<div class="item">
+        <span class="emoji">${s.cat==='out'?'🌯':(s.cat==='other'?'📦':'🛒')}</span>
+        <div class="grow"><div class="nm trunc">${s.label}</div>
+          <div class="meta mono">${s.date}</div></div>
+        <span class="mono" style="font-weight:650">${money(s.amt)}</span>
+        <button class="del" onclick="delSpend(${s.id})">×</button></div>`).join('');
+}
+
+/* ---------------- WEIGHT ---------------- */
+function setTarget(k,v){ const n=parseFloat(v); if(!isNaN(n)) S.targets[k]=n; save(); renderEat(); }
+
+function addWeight(){
+  const lb = parseFloat($('wVal').value);
+  if(isNaN(lb) || lb<=0) return;
+  const date = $('wDate').value || todayISO();
+  S.weights = S.weights.filter(w=>w.date!==date);
+  S.weights.push({date, lb});
+  S.weights.sort((a,b)=>a.date<b.date?-1:1);
+  $('wVal').value='';
+  save(); renderWeight();
+}
+function delWeight(date){ S.weights = S.weights.filter(w=>w.date!==date); save(); renderWeight(); }
+
+function avgLast(n){
+  const w = S.weights.slice(-n);
+  return w.length ? w.reduce((a,x)=>a+x.lb,0)/w.length : null;
+}
+function ratePerWeek(){
+  const w = S.weights;
+  if(w.length < 2) return null;
+  const recent = w.slice(-14);
+  if(recent.length < 2) return null;
+  const d0 = new Date(recent[0].date), d1 = new Date(recent[recent.length-1].date);
+  const days = (d1-d0)/86400000;
+  if(days < 3) return null;
+  // average of first third vs last third smooths daily noise
+  const third = Math.max(1, Math.floor(recent.length/3));
+  const a = recent.slice(0,third).reduce((s,x)=>s+x.lb,0)/third;
+  const b = recent.slice(-third).reduce((s,x)=>s+x.lb,0)/third;
+  return (b-a)/days*7;
+}
+
+function renderWeight(){
+  if(!$('wDate').value) $('wDate').value = todayISO();
+  $('tP').value = S.targets.p;
+  $('tK').value = S.targets.kcal;
+
+  const cur = S.weights.length ? S.weights[S.weights.length-1].lb : S.start;
+  $('cutSub').textContent = `${S.start} → ${S.goal} lb · currently ${cur} lb`;
+
+  const avg = avgLast(7);
+  $('wAvg').textContent  = avg ? avg.toFixed(1) : '—';
+  const r = ratePerWeek();
+  $('wRate').textContent = r==null ? '—' : (r>0?'+':'') + r.toFixed(2);
+  $('wRate').style.color = r==null ? '' : (r < -0.2 ? 'var(--accent)' : (r>0.1?'var(--bad)':'var(--warn)'));
+  $('wTogo').textContent = ((avg??cur) - S.goal).toFixed(1);
+
+  // projection
+  let proj = '—';
+  if(r != null && r < -0.05){
+    const weeks = ((avg??cur) - S.goal) / -r;
+    if(weeks > 0 && weeks < 260){
+      const d = new Date(); d.setDate(d.getDate() + weeks*7);
+      proj = d.toLocaleDateString('en-CA',{month:'short', year:'numeric'}) + ` · ${Math.round(weeks)} wk`;
+    }
+  } else if(r != null){ proj = 'not losing at this rate'; }
+  $('wProj').textContent = proj;
+
+  $('chart').innerHTML = chartSVG();
+
+  $('wList').innerHTML = !S.weights.length
+    ? '<div class="empty">Log your first weigh-in.</div>'
+    : S.weights.slice().reverse().slice(0,30).map(w=>`
+      <div class="item"><div class="grow"><div class="nm mono">${w.lb} lb</div>
+        <div class="meta mono">${w.date}</div></div>
+        <button class="del" onclick="delWeight('${w.date}')">×</button></div>`).join('');
+}
+
+function chartSVG(){
+  const w = S.weights;
+  if(w.length < 2) return '<div class="empty">Two weigh-ins and a line shows up here.</div>';
+  const W=560, H=180, PAD=26;
+  const xs = w.map(x=>new Date(x.date).getTime());
+  const x0=Math.min(...xs), x1=Math.max(...xs);
+  const ys = w.map(x=>x.lb).concat([S.goal]);
+  let y0=Math.min(...ys)-2, y1=Math.max(...ys)+2;
+  const px = t => PAD + (x1===x0?0.5:(t-x0)/(x1-x0)) * (W-PAD*2);
+  const py = v => PAD + (1-(v-y0)/(y1-y0)) * (H-PAD*2);
+  const pts = w.map((d,i)=>`${px(xs[i]).toFixed(1)},${py(d.lb).toFixed(1)}`).join(' ');
+  const gy = py(S.goal);
+  const area = `${px(x0)},${H-PAD} ${pts} ${px(x1)},${H-PAD}`;
+  return `<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:auto;display:block">
+    <defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#3ddc84" stop-opacity=".26"/>
+      <stop offset="100%" stop-color="#3ddc84" stop-opacity="0"/></linearGradient></defs>
+    <polygon points="${area}" fill="url(#g)"/>
+    <line x1="${PAD}" y1="${gy}" x2="${W-PAD}" y2="${gy}" stroke="#8b96a3" stroke-width="1" stroke-dasharray="5 5"/>
+    <text x="${W-PAD}" y="${gy-7}" fill="#8b96a3" font-size="11" text-anchor="end">goal ${S.goal}</text>
+    <polyline points="${pts}" fill="none" stroke="#3ddc84" stroke-width="2.5"
+      stroke-linejoin="round" stroke-linecap="round"/>
+    <circle cx="${px(xs[xs.length-1])}" cy="${py(w[w.length-1].lb)}" r="4.5" fill="#3ddc84"/>
+    <text x="${PAD}" y="${H-6}" fill="#8b96a3" font-size="11">${w[0].date.slice(5)}</text>
+    <text x="${W-PAD}" y="${H-6}" fill="#8b96a3" font-size="11" text-anchor="end">${w[w.length-1].date.slice(5)}</text>
+  </svg>`;
+}
+
+/* ---------------- backup ---------------- */
+function exportData(){
+  const blob = new Blob([JSON.stringify(S,null,2)], {type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `cost-of-eating-${todayISO()}.json`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+function importData(){
+  const inp = document.createElement('input');
+  inp.type='file'; inp.accept='application/json';
+  inp.onchange = () => {
+    const f = inp.files[0]; if(!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      try{
+        S = Object.assign(DEFAULTS(), JSON.parse(rd.result));
+        S.day = todayISO(); save(); renderAll();
+      }catch(e){ alert('Could not read that file.'); }
+    };
+    rd.readAsText(f);
+  };
+  inp.click();
+}
+
+/* ---------------- boot ---------------- */
+function renderAll(){ renderEat(); renderShop(); renderSpend(); renderWeight(); }
+renderAll();
+</script>
+</body>
+</html>
